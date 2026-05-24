@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Giriş</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #e8f0fe;
+            font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 32px;
+            padding: 2rem 1.5rem;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #1e293b;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .sub {
+            color: #64748b;
+            text-align: center;
+            margin-bottom: 32px;
+            font-size: 0.85rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 18px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 60px;
+            font-size: 1rem;
+            color: #0f172a;
+            outline: none;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        input:focus {
+            border-color: #3b82f6;
+            background: white;
+        }
+
+        input::placeholder {
+            color: #94a3b8;
+        }
+
+        .giris-btn {
+            width: 100%;
+            background: #3b82f6;
+            border: none;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 60px;
+            color: white;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .giris-btn:active {
+            transform: scale(0.98);
+        }
+
+        .hata-msj {
+            color: #ef4444;
+            font-size: 0.75rem;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .ip-kart {
+            background: #f1f5f9;
+            border-radius: 24px;
+            padding: 1.2rem;
+            margin-top: 24px;
+            border: 1px solid #e2e8f0;
+            display: none;
+        }
+
+        .ip-kart.basari {
+            display: block;
+        }
+
+        .ip-baslik {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #475569;
+            text-align: center;
+        }
+
+        .ip-deger {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: monospace;
+            color: #1e293b;
+            text-align: center;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+
+        .bilgi-satir {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.85rem;
+        }
+
+        .bilgi-etiket {
+            color: #475569;
+        }
+
+        .bilgi-icerik {
+            color: #0f172a;
+            font-weight: 500;
+            text-align: right;
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 1.5rem;
+            }
+            .ip-deger {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>Hoş Geldin</h1>
+    <div class="sub">Adını gir ve devam et</div>
+
+    <input type="text" id="userName" placeholder="Örnek: Mehmet" autocomplete="off">
+    <div class="hata-msj" id="errorMsg">Geçerli bir isim girin</div>
+
+    <button class="giris-btn" id="girisBtn">Giriş Yap</button>
+
+    <div class="ip-kart" id="ipKart">
+        <div class="ip-baslik">IP ve Konum Bilgilerin</div>
+        <div class="ip-deger" id="kendiIp">--.--.--.--</div>
+        <div class="bilgi-satir">
+            <span class="bilgi-etiket">Ülke</span>
+            <span class="bilgi-icerik" id="kendiUlke">--</span>
+        </div>
+        <div class="bilgi-satir">
+            <span class="bilgi-etiket">Şehir</span>
+            <span class="bilgi-icerik" id="kendiSehir">--</span>
+        </div>
+        <div class="bilgi-satir">
+            <span class="bilgi-etiket">Yaklaşık Konum</span>
+            <span class="bilgi-icerik" id="kendiYaklasik">--</span>
+        </div>
+        <div class="bilgi-satir">
+            <span class="bilgi-etiket">İSS</span>
+            <span class="bilgi-icerik" id="kendiIss">--</span>
+        </div>
+        <div class="bilgi-satir">
+            <span class="bilgi-etiket">Koordinat</span>
+            <span class="bilgi-icerik" id="kendiCoord">--</span>
+        </div>
+        <div class="bilgi-satir">
+            <span class="bilgi-etiket">Giriş Zamanı</span>
+            <span class="bilgi-icerik" id="kendiZaman">--</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentIP = null;
+
+    function isValidName(name) {
+        return name.trim().length >= 2 && /^[A-Za-zÇçĞğİıÖöŞşÜü\s]+$/.test(name);
+    }
+
+    async function getAddressFromCoords(lat, lon) {
+        if (!lat || !lon) return "—";
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=14`);
+            const data = await res.json();
+            if (data && data.display_name) {
+                const parts = data.display_name.split(',');
+                return parts.slice(0, 3).join(', ').substring(0, 50);
+            }
+        } catch (err) {}
+        return "—";
+    }
+
+    async function fetchIPDetails() {
+        try {
+            const res = await fetch('https://ip-api.com/json/?fields=status,query,country,city,isp,lat,lon');
+            const data = await res.json();
+            if (data.status === 'success') {
+                const yaklasik = await getAddressFromCoords(data.lat, data.lon);
+                return {
+                    ip: data.query,
+                    country: data.country || "—",
+                    city: data.city || "—",
+                    isp: data.isp || "—",
+                    lat: data.lat || "—",
+                    lon: data.lon || "—",
+                    yaklasik: yaklasik
+                };
+            }
+        } catch (err) {}
+        try {
+            const fallback = await fetch('https://api.ipify.org?format=json');
+            const fallData = await fallback.json();
+            return {
+                ip: fallData.ip,
+                country: "—",
+                city: "—",
+                isp: "—",
+                lat: "—",
+                lon: "—",
+                yaklasik: "—"
+            };
+        } catch {
+            return {
+                ip: "Alınamadı",
+                country: "—",
+                city: "—",
+                isp: "—",
+                lat: "—",
+                lon: "—",
+                yaklasik: "—"
+            };
+        }
+    }
+
+    function showOwnIP(record) {
+        document.getElementById('kendiIp').innerText = record.ip;
+        document.getElementById('kendiUlke').innerText = record.ulke;
+        document.getElementById('kendiSehir').innerText = record.sehir;
+        document.getElementById('kendiIss').innerText = record.saglayici;
+        document.getElementById('kendiCoord').innerHTML = `${record.lat}, ${record.lon}`;
+        document.getElementById('kendiYaklasik').innerText = record.yaklasik || "—";
+        document.getElementById('kendiZaman').innerText = record.girisZamani;
+        
+        document.getElementById('ipKart').classList.add('basari');
+        document.getElementById('girisBtn').style.display = 'none';
+        document.getElementById('userName').disabled = true;
+        document.getElementById('userName').style.background = '#f1f5f9';
+    }
+
+    async function checkSessionAndShow() {
+        const loggedUser = sessionStorage.getItem('loggedInUser');
+        if (loggedUser) {
+            const userData = JSON.parse(loggedUser);
+            currentIP = userData.ip;
+            showOwnIP(userData);
+        }
+    }
+
+    document.getElementById('girisBtn').addEventListener('click', async () => {
+        const nameInput = document.getElementById('userName');
+        const name = nameInput.value;
+        const errorDiv = document.getElementById('errorMsg');
+
+        if (!isValidName(name)) {
+            errorDiv.style.display = 'block';
+            nameInput.style.borderColor = '#ef4444';
+            return;
+        }
+
+        errorDiv.style.display = 'none';
+        nameInput.style.borderColor = '#cbd5e1';
+
+        const btn = document.getElementById('girisBtn');
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Kaydediliyor...';
+
+        const ipInfo = await fetchIPDetails();
+        const now = new Date();
+        const timestamp = `${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+
+        let existing = localStorage.getItem("visitorLogs");
+        let logs = existing ? JSON.parse(existing) : [];
+        const existingIndex = logs.findIndex(record => record.ip === ipInfo.ip);
+        
+        let finalName = name.trim();
+        let finalRecord = null;
+
+        if (existingIndex !== -1) {
+            finalName = logs[existingIndex].isim;
+            
+            logs[existingIndex].girisZamani = timestamp;
+            logs[existingIndex].ulke = ipInfo.country;
+            logs[existingIndex].sehir = ipInfo.city;
+            logs[existingIndex].saglayici = ipInfo.isp;
+            logs[existingIndex].lat = ipInfo.lat;
+            logs[existingIndex].lon = ipInfo.lon;
+            logs[existingIndex].yaklasik = ipInfo.yaklasik;
+            
+            finalRecord = {
+                id: logs[existingIndex].id,
+                isim: finalName,
+                ip: ipInfo.ip,
+                ulke: ipInfo.country,
+                sehir: ipInfo.city,
+                saglayici: ipInfo.isp,
+                lat: ipInfo.lat,
+                lon: ipInfo.lon,
+                yaklasik: ipInfo.yaklasik,
+                girisZamani: timestamp
+            };
+            
+            if (name.trim() !== finalName) {
+                alert(`Bu IP adresi "${finalName}" olarak kayıtlı.`);
+            }
+        } else {
+            finalRecord = {
+                id: Date.now(),
+                isim: finalName,
+                ip: ipInfo.ip,
+                ulke: ipInfo.country,
+                sehir: ipInfo.city,
+                saglayici: ipInfo.isp,
+                lat: ipInfo.lat,
+                lon: ipInfo.lon,
+                yaklasik: ipInfo.yaklasik,
+                girisZamani: timestamp
+            };
+            logs.push(finalRecord);
+        }
+
+        localStorage.setItem("visitorLogs", JSON.stringify(logs));
+        sessionStorage.setItem('loggedInUser', JSON.stringify(finalRecord));
+        currentIP = ipInfo.ip;
+        
+        showOwnIP(finalRecord);
+
+        btn.disabled = false;
+        btn.innerHTML = 'Giriş Yap';
+    });
+
+    checkSessionAndShow();
+</script>
+</body>
+</html>
